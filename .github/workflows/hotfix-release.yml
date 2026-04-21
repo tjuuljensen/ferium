@@ -1,0 +1,71 @@
+name: Hotfix Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "Tag to release (example: v5.0.0-hotfix.1)"
+        required: true
+        type: string
+      target_ref:
+        description: "Branch or commit to tag"
+        required: false
+        default: "release/v5.0.0-hotfix"
+        type: string
+      prerelease:
+        description: "Mark release as prerelease"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  hotfix-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target ref
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.target_ref }}
+
+      - name: Ensure tag exists on remote
+        env:
+          TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git rev-parse -q --verify "refs/tags/${TAG_NAME}" >/dev/null; then
+            echo "Tag ${TAG_NAME} already exists"
+          else
+            git tag "${TAG_NAME}"
+            git push origin "refs/tags/${TAG_NAME}"
+          fi
+
+      - name: Download artifacts from latest successful build.yml
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          branch: release/v5.0.0-hotfix
+          path: ./out
+
+      - name: Verify artifacts exist
+        run: |
+          ls -la ./out
+          find ./out -type f -name 'ferium-*.zip' -print
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag_name }}
+          name: Ferium ${{ inputs.tag_name }}
+          prerelease: ${{ inputs.prerelease }}
+          files: ./out/**/ferium-*.zip
+          body: |
+            Hotfix release for Modrinth response decoding compatibility.
+
+            Source branch: release/v5.0.0-hotfix
+            Build workflow: .github/workflows/build.yml
