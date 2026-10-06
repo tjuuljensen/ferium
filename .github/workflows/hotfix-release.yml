@@ -65,7 +65,8 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
           files: ./out/**/ferium-*.zip
           body: |
-            Hotfix release for Modrinth response decoding compatibility.
+            Hotfix release for Modrinth response decoding compatibility, with
+            read-only `ferium inventory` support for provider-qualified mod IDs.
 
             Source branch: release/v5.0.0-hotfix
             Build workflow: .github/workflows/build.yml

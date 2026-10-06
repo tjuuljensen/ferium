@@ -4,7 +4,7 @@ use crate::{
     actual_main,
     cli::{Ferium, FilterArguments, ModpackSubCommands, Platform, ProfileSubCommands, SubCommands},
 };
-use libium::config::structs::ModLoader;
+use libium::config::structs::{ModLoader, Profile};
 use std::{
     assert_matches,
     env::current_dir,
@@ -425,11 +425,14 @@ async fn list_modpacks() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn upgrade() {
-    assert_matches!(
-        actual_main(get_args(SubCommands::Upgrade, Some("one_profile_full"))).await,
-        Ok(()),
+async fn upgrade_empty_profile() {
+    let profile = Profile::new(
+        "Empty profile".to_owned(),
+        current_dir().unwrap().join("tests").join("mods"),
+        vec!["1.18.2".to_owned()],
+        ModLoader::Fabric,
     );
+    assert_matches!(crate::subcommands::upgrade(&profile).await, Ok(()));
 }
 
 #[tokio::test(flavor = "multi_thread")]

@@ -56,7 +56,7 @@ pub async fn upgrade(modpack: &'_ Modpack) -> Result<()> {
 
             let file_ids = manifest.files.iter().map(|file| file.file_id).collect();
             let files = CURSEFORGE_API.get_files(file_ids).await?;
-            println!("{} Fetched {} mods", &*TICK, files.len());
+            println!("{} Fetched {} mods", *TICK, files.len());
 
             let mut tasks = JoinSet::new();
             let mut msg_shown = false;
