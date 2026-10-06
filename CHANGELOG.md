@@ -4,6 +4,8 @@
 ### TBD
 
 - **Features**
+  - Add read-only `ferium inventory` JSON output for mapping installed JARs to
+    provider-qualified Ferium project IDs.
 - **Bug Fixes**
 - **Internal Changes**
 

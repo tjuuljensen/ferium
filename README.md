@@ -271,6 +271,14 @@ You can list out all the mods in your current profile by running `ferium list`. 
 
 You can remove any of your mods using `ferium remove`; just select the ones you would like to remove using the space key, and press enter once you're done. You can also provide the names, IDs, or slugs of the mods as arguments.
 
+For automation, `ferium inventory --directory PATH` prints a read-only JSON
+mapping of installed JAR filenames to provider-qualified project IDs. Use
+`--platform modrinth` or `--platform curseforge` to select the preferred
+primary `project_id`; `project_ids` retains other recognized provider aliases.
+The document includes `schema_version`, `complete`, `mod_count`, `mods`, and
+`unresolved_files`. A false `complete` value means callers must not use the
+mapping for destructive reconciliation.
+
 > [!TIP]
 > Older versions did not have the ability to remove mods by their slug, since it wasn't stored in the config. If you are upgrading from an older version, you will initially not be able to remove mods by their slugs. You can run `ferium list -v` to load the slugs into the profile.
 
