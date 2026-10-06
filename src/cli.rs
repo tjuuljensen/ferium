@@ -76,6 +76,18 @@ pub enum SubCommands {
         #[clap(long, short, visible_alias = "override")]
         force: bool,
     },
+    /// Print a read-only JSON mapping of installed JAR files to known project IDs
+    Inventory {
+        /// The platform to prefer as the primary Ferium project identifier.
+        #[clap(long, short, default_value_t)]
+        platform: Platform,
+        /// The directory to inspect. Defaults to the active profile output directory.
+        #[clap(long, short,
+            visible_aliases = ["dir", "folder"],
+            aliases = ["output_directory", "out_dir"]
+        )]
+        directory: Option<PathBuf>,
+    },
     /// Print shell auto completions for the specified shell
     Complete {
         /// The shell to generate auto completions for

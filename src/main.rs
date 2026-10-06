@@ -236,6 +236,83 @@ async fn actual_main(mut cli_app: Ferium) -> Result<()> {
 
             did_add_fail = add::display_successes_failures(&successes, failures);
         }
+        SubCommands::Inventory {
+            platform,
+            directory,
+        } => {
+            let mods_dir = match directory.as_ref() {
+                Some(path) => path,
+                None => {
+                    let profile_index = if config.profiles.len() == 1 {
+                        0
+                    } else {
+                        config.active_profile
+                    };
+                    &config
+                        .profiles
+                        .get(profile_index)
+                        .ok_or_else(|| anyhow!("The active Ferium profile is invalid"))?
+                        .output_dir
+                }
+            };
+            let ids = libium::scan(mods_dir, || {}).await?;
+            let discovered_file_count = ids.len();
+            let mut mods = Vec::with_capacity(discovered_file_count);
+            let mut unresolved_files = Vec::new();
+
+            for (filename, modrinth_id, curseforge_id) in ids {
+                let modrinth_project_id = modrinth_id.map(|id| format!("modrinth:{id}"));
+                let curseforge_project_id = curseforge_id.map(|id| format!("curseforge:{id}"));
+                let project_id = match platform {
+                    cli::Platform::Modrinth => modrinth_project_id
+                        .clone()
+                        .or_else(|| curseforge_project_id.clone()),
+                    cli::Platform::Curseforge => curseforge_project_id
+                        .clone()
+                        .or_else(|| modrinth_project_id.clone()),
+                };
+
+                if project_id.is_none() {
+                    unresolved_files.push(filename.clone());
+                }
+                let project_ids = [modrinth_project_id, curseforge_project_id]
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<_>>();
+
+                mods.push(serde_json::json!({
+                    "file": filename,
+                    "project_id": project_id,
+                    "project_ids": project_ids,
+                }));
+            }
+
+            let entries = std::fs::read_dir(mods_dir)?.collect::<std::io::Result<Vec<_>>>()?;
+            let jar_count = entries
+                .iter()
+                .filter(|entry| {
+                    entry.path().is_file()
+                        && entry
+                            .path()
+                            .extension()
+                            .and_then(|extension| extension.to_str())
+                            .is_some_and(|extension| extension.eq_ignore_ascii_case("jar"))
+                })
+                .count();
+            let complete = unresolved_files.is_empty() && jar_count == discovered_file_count;
+
+            println!(
+                "{}",
+                serde_json::json!({
+                    "schema_version": 1,
+                    "complete": complete,
+                    "mod_count": jar_count,
+                    "mods": mods,
+                    "unresolved_files": unresolved_files,
+                })
+            );
+            return Ok(());
+        }
         SubCommands::Add {
             identifiers,
             force,
