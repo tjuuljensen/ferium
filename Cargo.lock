@@ -616,8 +616,7 @@ dependencies = [
 [[package]]
 name = "ferinth"
 version = "2.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "869c5f9bf643c820ce759b545626c795112abfc0e70644b16ec67a1e07349d48"
+source = "git+https://github.com/gorilla-devs/ferinth.git?rev=d3aaa24#d3aaa2451fe300ed10d44ee800bea07d2080f5bd"
 dependencies = [
  "chrono",
  "lazy-regex",
