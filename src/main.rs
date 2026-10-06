@@ -240,20 +240,19 @@ async fn actual_main(mut cli_app: Ferium) -> Result<()> {
             platform,
             directory,
         } => {
-            let mods_dir = match directory.as_ref() {
-                Some(path) => path,
-                None => {
-                    let profile_index = if config.profiles.len() == 1 {
-                        0
-                    } else {
-                        config.active_profile
-                    };
-                    &config
-                        .profiles
-                        .get(profile_index)
-                        .ok_or_else(|| anyhow!("The active Ferium profile is invalid"))?
-                        .output_dir
-                }
+            let mods_dir = if let Some(path) = directory.as_ref() {
+                path
+            } else {
+                let profile_index = if config.profiles.len() == 1 {
+                    0
+                } else {
+                    config.active_profile
+                };
+                &config
+                    .profiles
+                    .get(profile_index)
+                    .ok_or_else(|| anyhow!("The active Ferium profile is invalid"))?
+                    .output_dir
             };
             let ids = libium::scan(mods_dir, || {}).await?;
             let discovered_file_count = ids.len();
