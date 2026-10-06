@@ -52,7 +52,7 @@ pub async fn get_platform_downloadables(profile: &Profile) -> Result<(Vec<Downlo
         mod_sender.send(mod_)?;
     }
 
-    let mut initial = true;
+    let mut initial = !profile.mods.is_empty();
 
     // A race condition exists where if the last task drops its sender before this thread receives the message,
     // that particular message will get ignored. I used the ostrich algorithm to solve this.
